@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-// --- DATA MODELS (DITAMBAHKAN) ---
-// Model untuk menampung data satu perjalanan lengkap
+// --- DATA MODELS ---
 class _TripData {
   final String projectName;
   final String nopol;
@@ -28,7 +27,6 @@ class _TripData {
   });
 }
 
-// Model untuk menampung data lokasi
 class _LocationData {
   final String title;
   final String location;
@@ -42,7 +40,7 @@ class _LocationData {
     required this.longitude,
   });
 }
-// --- AKHIR DATA MODELS ---
+// --- END DATA MODELS ---
 
 
 class DriverHistoryScreen extends StatefulWidget {
@@ -56,8 +54,7 @@ class _DriverHistoryScreenState extends State<DriverHistoryScreen> {
   int _selectedDay = 6;
   final List<String> _dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
-  // --- DUMMY DATA (DITAMBAHKAN) ---
-  // Daftar data perjalanan, agar tidak hardcoded di UI
+  // --- DUMMY DATA ---
   final List<_TripData> _tripHistory = [
     _TripData(
       projectName: 'Proyek Pengiriman A',
@@ -104,42 +101,40 @@ class _DriverHistoryScreenState extends State<DriverHistoryScreen> {
       ),
     ),
   ];
-  // --- AKHIR DUMMY DATA ---
+  // --- END DUMMY DATA ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: const Text('Riwayat Perjalanan Driver', style: TextStyle(color: Colors.white)),
+        title: const Text('Riwayat Perjalanan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.teal.shade800,
-        elevation: 0,
+        elevation: 2,
         automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [
           _buildDateSelector(),
-          // --- UI DIUBAH MENJADI DINAMIS ---
           Expanded(
             child: _buildHistoryDetails(),
           ),
-          // --- AKHIR PERUBAHAN UI ---
         ],
       ),
     );
   }
 
   Widget _buildDateSelector() {
-    // ... (Tidak ada perubahan di sini, biarkan sama)
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       decoration: BoxDecoration(
         color: Colors.teal.shade800,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           )
         ],
       ),
@@ -148,7 +143,7 @@ class _DriverHistoryScreenState extends State<DriverHistoryScreen> {
           const Text(
             'Agustus 2025',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -181,105 +176,45 @@ class _DriverHistoryScreenState extends State<DriverHistoryScreen> {
     );
   }
 
-  // --- FUNGSI INI DIUBAH TOTAL ---
   Widget _buildHistoryDetails() {
     final dayName = _dayNames[(_selectedDay - 1) % 7];
     final fullDayName = {'Sen': 'Senin', 'Sel': 'Selasa', 'Rab': 'Rabu', 'Kam': 'Kamis', 'Jum': 'Jumat', 'Sab': 'Sabtu', 'Min': 'Minggu'}[dayName];
 
-    // Jika tidak ada data untuk tanggal yang dipilih, tampilkan pesan.
-    // (Logika ini bisa Anda kembangkan lebih lanjut)
     if (_tripHistory.isEmpty) {
-      return const Center(child: Text("Tidak ada riwayat perjalanan."));
+      return const Center(child: Text("Tidak ada riwayat perjalanan.", style: TextStyle(fontSize: 16, color: Colors.grey)));
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 8.0),
+          padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 12.0),
           child: Text(
             '$fullDayName, $_selectedDay Agustus 2025',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.grey.shade800,
             ),
           ),
         ),
         Expanded(
-          // Menggunakan ListView.separated untuk membuat daftar dengan pemisah
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16.0),
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             itemCount: _tripHistory.length,
-            // itemBuilder membangun setiap grup item
             itemBuilder: (context, index) {
               final trip = _tripHistory[index];
-              return _TripDetailsGroup(trip: trip);
-            },
-            // separatorBuilder membangun pemisah antar grup
-            separatorBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Divider(
-                  color: Colors.black.withOpacity(0.5),
-                  thickness: 2.5,
-                  indent: 2,
-                  endIndent: 2,
-                ),
-              );
+              return _ExpandableTripCard(trip: trip);
             },
           ),
         ),
       ],
     );
   }
-  // --- AKHIR PERUBAHAN ---
 }
-
-
-// --- WIDGET BARU UNTUK MENGELOMPOKKAN ITEM ---
-class _TripDetailsGroup extends StatelessWidget {
-  final _TripData trip;
-
-  const _TripDetailsGroup({required this.trip});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _DriverHistoryCard(
-          projectName: trip.projectName,
-          nopol: trip.nopol,
-          driverName: trip.driverName,
-          kmAwal: trip.kmAwal,
-          kmTiba: trip.kmTiba,
-          tanggalBerangkat: trip.tanggalBerangkat,
-          tanggalSampai: trip.tanggalSampai,
-          keterangan: trip.keterangan,
-        ),
-        const SizedBox(height: 12),
-        _LocationDetailsCard(
-          title: trip.departure.title,
-          location: trip.departure.location,
-          latitude: trip.departure.latitude,
-          longitude: trip.departure.longitude,
-        ),
-        const SizedBox(height: 12),
-        _LocationDetailsCard(
-          title: trip.arrival.title,
-          location: trip.arrival.location,
-          latitude: trip.arrival.latitude,
-          longitude: trip.arrival.longitude,
-        ),
-      ],
-    );
-  }
-}
-// --- AKHIR WIDGET BARU ---
 
 
 class _DateCard extends StatelessWidget {
-  // ... (Tidak ada perubahan di sini)
   final String day;
   final String dayName;
   final bool isSelected;
@@ -305,10 +240,10 @@ class _DateCard extends StatelessWidget {
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: Colors.teal.withOpacity(0.3),
+                  color: Colors.teal.withOpacity(0.4),
                   spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
                 ),
               ]
             : [],
@@ -338,237 +273,171 @@ class _DateCard extends StatelessWidget {
   }
 }
 
+class _ExpandableTripCard extends StatefulWidget {
+  final _TripData trip;
 
-// 1. DIUBAH MENJADI STATEFULWIDGET
-class _DriverHistoryCard extends StatefulWidget {
-  final String projectName;
-  final String nopol;
-  final String driverName;
-  final String kmAwal;
-  final String kmTiba;
-  final String tanggalBerangkat;
-  final String tanggalSampai;
-  final String keterangan;
-
-  const _DriverHistoryCard({
-    required this.projectName,
-    required this.nopol,
-    required this.driverName,
-    required this.kmAwal,
-    required this.kmTiba,
-    required this.tanggalBerangkat,
-    required this.tanggalSampai,
-    required this.keterangan,
-  });
+  const _ExpandableTripCard({required this.trip});
 
   @override
-  State<_DriverHistoryCard> createState() => _DriverHistoryCardState();
+  State<_ExpandableTripCard> createState() => _ExpandableTripCardState();
 }
 
-class _DriverHistoryCardState extends State<_DriverHistoryCard> {
-  // 2. State untuk melacak kondisi expand/collapse
+class _ExpandableTripCardState extends State<_ExpandableTripCard> {
   bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
+      elevation: 5,
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
       ),
-      // Clip.antiAlias agar efek animasi tidak keluar dari Card
       clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.projectName,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal.shade900,
-              ),
-            ),
-            const Divider(height: 20),
-
-            // 3. Animasi agar transisi expand/collapse terlihat mulus
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              child: Column(
-                // 4. Konten yang bisa disembunyikan
-                children: _isExpanded
-                    ? [
-                        _buildInfoRow(Icons.person, 'Driver', widget.driverName),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.trip.projectName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal.shade900,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(Icons.person_outline, 'Driver', widget.trip.driverName),
                         const SizedBox(height: 8),
-                        _buildInfoRow(Icons.directions_car, 'NOPOL', widget.nopol),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.route, 'KM Awal', widget.kmAwal),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.route_outlined, 'KM Tiba', widget.kmTiba),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.calendar_today, 'Berangkat', widget.tanggalBerangkat),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.calendar_today_outlined, 'Sampai', widget.tanggalSampai),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.info, 'Keterangan', widget.keterangan),
-                        const SizedBox(height: 16), // Memberi jarak sebelum tombol
-                      ]
-                    : [
-                        // Tampilkan info ringkas saat tertutup
-                        _buildInfoRow(Icons.directions_car, 'NOPOL', widget.nopol),
-                        const SizedBox(height: 8),
-                         _buildInfoRow(Icons.person, 'Driver', widget.driverName),
+                        _buildInfoRow(Icons.directions_car_outlined, 'NOPOL', widget.trip.nopol),
                       ],
-              ),
-            ),
-            
-            // 5. Tombol untuk mengubah state
-            SizedBox(
-              width: double.infinity,
-              child: TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                icon: Icon(
-                  _isExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: Colors.teal.shade800,
-                ),
-                label: Text(
-                  _isExpanded ? 'Tampilkan Lebih Sedikit' : 'Lihat Detail Lengkap',
-                  style: TextStyle(
-                    color: Colors.teal.shade800,
-                    fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade100.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: Colors.teal.shade800,
+                      size: 30,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.fastOutSlowIn,
+            child: _isExpanded ? _buildExpandedDetails() : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
 
-  // Fungsi helper ini bisa tetap di sini untuk digunakan di dalam build method
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
-    return Row(
+  Widget _buildExpandedDetails() {
+    return Container(
+      color: Colors.grey[50],
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 20.0),
+      child: Column(
+        children: [
+          const Divider(height: 20, thickness: 1.5),
+          _buildSectionTitle("Detail Proyek"),
+          _buildInfoRow(Icons.route_outlined, 'KM Awal', widget.trip.kmAwal),
+          const SizedBox(height: 10),
+          _buildInfoRow(Icons.route, 'KM Tiba', widget.trip.kmTiba),
+          const SizedBox(height: 10),
+          _buildInfoRow(Icons.calendar_today_outlined, 'Berangkat', widget.trip.tanggalBerangkat),
+          const SizedBox(height: 10),
+          _buildInfoRow(Icons.calendar_today, 'Sampai', widget.trip.tanggalSampai),
+          const SizedBox(height: 10),
+          _buildInfoRow(Icons.info_outline, 'Keterangan', widget.trip.keterangan),
+          const SizedBox(height: 24),
+
+          _buildLocationSection(widget.trip.departure),
+          const SizedBox(height: 24),
+          _buildLocationSection(widget.trip.arrival),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationSection(_LocationData locationData) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: Colors.grey.shade500, size: 18),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+        _buildSectionTitle(locationData.title),
+        _buildInfoRow(Icons.location_on_outlined, 'Lokasi', locationData.location),
+        const SizedBox(height: 10),
+        _buildInfoRow(Icons.map_outlined, 'Koordinat', '${locationData.latitude}, ${locationData.longitude}'),
+        const SizedBox(height: 20),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            onPressed: () { /* TODO: Implement map functionality for ${locationData.title} */ },
+            icon: const Icon(Icons.map, color: Colors.white, size: 18),
+            label: const Text('Lihat di Peta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal.shade700,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: valueColor ?? Colors.black87,
-                ),
-                softWrap: true,
-              ),
-            ],
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              elevation: 3,
+            ),
           ),
         ),
       ],
     );
   }
-}
 
-class _LocationDetailsCard extends StatelessWidget {
-  // ... (Tidak ada perubahan di sini)
-  final String title;
-  final String location;
-  final String latitude;
-  final String longitude;
-
-  const _LocationDetailsCard({
-    required this.title,
-    required this.location,
-    required this.latitude,
-    required this.longitude,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal.shade900,
-              ),
-            ),
-            const Divider(height: 20),
-            _buildInfoRow(Icons.location_on, 'Lokasi', location),
-            const SizedBox(height: 8),
-            _buildInfoRow(Icons.map, 'Latitude', latitude),
-            const SizedBox(height: 8),
-            _buildInfoRow(Icons.map_outlined, 'Longitude', longitude),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement map functionality
-                },
-                icon: const Icon(Icons.map, color: Colors.white),
-                label: const Text('Lihat di Peta', 
-                style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal.shade800,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 17,
+          color: Colors.teal.shade800,
         ),
       ),
     );
   }
-  
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: Colors.grey.shade500, size: 18),
-        const SizedBox(width: 8),
+        Icon(icon, color: Colors.grey.shade600, size: 20),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 13, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: valueColor ?? Colors.black87,
+                  color: Colors.black87,
+                  fontSize: 15,
                 ),
                 softWrap: true,
               ),
